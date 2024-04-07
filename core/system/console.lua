@@ -14,13 +14,13 @@ local _console = class("console");
 
 ---@param log_level number
 function _console:constructor(log_level)
-	self.log_level = 0;
+	self.log_level = 5;
 	self.log_levels = {
 		[0] = "^5INFO^0",
 		[1] = "^3WARN^0",
-		[2] = "^1ERROR^0",
-		[3] = "^6DEBUG^0",
-		[4] = "^5TRACE^0",
+		[2] = "^5TRACE^0",
+		[3] = "^1ERROR^0",
+		[4] = "^6DEBUG^0",
 		[5] = "^1FATAL^0"
 	};
 end
@@ -126,38 +126,50 @@ end
 
 ---@vararg ConsoleData | any
 function _console:log(...)
-	self:send(0, ...);
+	if (self.log_level >= 0) then
+		self:send(0, ...);
+	end
 	return self;
 end
 
 ---@vararg any
 function _console:warn(...)
-	self:send(1, ...);
+	if (self.log_level >= 1) then
+		self:send(1, ...);
+	end
+	return self;
+end
+
+---@vararg ConsoleData | any
+function _console:trace(...)
+	if (self.log_level >= 2) then
+		self:send(2, ...);
+	end
 	return self;
 end
 
 ---@vararg ConsoleData | any
 function _console:err(...)
-	self:send(2, ...);
+	if (self.log_level >= 3) then
+		self:send(3, ...);
+	end
 	return self;
 end
 
 ---@vararg ConsoleData | any
 function _console:debug(...)
 	--IMPLEMENT YOUR DEBUGGING LOGIC HERE
-	self:send(3, ...);
-	return self;
-end
-
----@vararg ConsoleData | any
-function _console:trace(...)
-	self:send(4, ...);
+	if (self.log_level >= 4) then
+		self:send(4, ...);
+	end
 	return self;
 end
 
 ---@vararg ConsoleData | any
 function _console:fatal(...)
-	self:send(5, ...);
+	if (self.log_level >= 5) then
+		self:send(5, ...);
+	end
 	return self;
 end
 
