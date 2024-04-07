@@ -1,7 +1,7 @@
 ---@author JustGodWork
 ---@version 1.0.0
 ---@description A simple event emitter class for lua_version >= 5.4
----@source https://github.com/JustGodWork/lua_utils/blob/main/core/system/console.lua
+---@source https://github.com/JustGodWork/lua_utils/blob/fivem/core/system/console.lua
 
 local _print = print;
 local sort = table.sort;
@@ -16,12 +16,12 @@ local _console = class("console");
 function _console:constructor(log_level)
 	self.log_level = 0;
 	self.log_levels = {
-		[0] = "INFO",
-		[1] = "WARN",
-		[2] = "ERROR",
-		[3] = "DEBUG",
-		[4] = "TRACE",
-		[5] = "FATAL"
+		[0] = "^5INFO^0",
+		[1] = "^3WARN^0",
+		[2] = "^1ERROR^0",
+		[3] = "^6DEBUG^0",
+		[4] = "^5TRACE^0",
+		[5] = "^1FATAL^0"
 	};
 end
 
@@ -62,6 +62,7 @@ function _console:handle_obj(obj)
 			if (metatable and show_meta) then
 				dump(metatable, step, show_meta);
 			end
+
 			data[object] = true;
 
 			local keys = {};
@@ -71,10 +72,11 @@ function _console:handle_obj(obj)
 					keys[#keys + 1] = key;
 				end
 			end
+
 			step += 1;
 
 			buffer[#buffer + 1] = (
-				step == 1 and "\n%s -> {" or " %s -> {"
+				step == 1 and "\n^6%s^0 -> {" or " ^6%s^0 -> {"
 			):format(
 				self:get_type_name(object)
 			);
@@ -82,13 +84,19 @@ function _console:handle_obj(obj)
 			for i = 1, #keys do
 				local key = keys[i];
 				local value = object[key];
-				local key_str = type(key) == "string" and key or ("[%s]"):format(key);
-				buffer[#buffer + 1] = ("\n%s%s = %s"):format((" "):rep(step * 4), key_str, value);
+				local key_str = type(key) == "string"
+					and ("^6%s^0"):format(key)
+					or ("[^6%s^0]"):format(key);
+				local indentation = (" "):rep(step * 4);
+
+				buffer[#buffer + 1] = ("\n%s%s = ^5%s^0"):format(indentation, key_str, value);
 				dump(value, step, show_meta);
 				buffer[#buffer + 1] = ",";
 			end
+
 			step -= 1;
 			buffer[#buffer + 1] = ("\n%s}"):format((" "):rep(step * 4));
+
 			return;
 		end
 	end
@@ -108,12 +116,12 @@ function _console:send(log_level, ...)
 	local log_level_str = self.log_levels[log_level] or "UNKNOWN";
 	for i = 1, #args do
 		if (is_lua_table(args[i])) then
-			message = ("%s %s\n"):format(message, self:handle_obj(args[i]));
+			message = ("%s %s^0\n"):format(message, self:handle_obj(args[i]));
 		else
-			message = ("%s %s"):format(message, tostring(args[i]));
+			message = ("%s %s^0"):format(message, tostring(args[i]));
 		end
 	end
-	_print(("[%s]%s"):format(log_level_str, message));
+	_print(("^0[%s]%s"):format(log_level_str, message));
 end
 
 ---@vararg ConsoleData | any
@@ -136,6 +144,7 @@ end
 
 ---@vararg ConsoleData | any
 function _console:debug(...)
+	--IMPLEMENT YOUR DEBUGGING LOGIC HERE
 	self:send(3, ...);
 	return self;
 end
