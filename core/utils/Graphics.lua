@@ -54,7 +54,7 @@ function graphics:draw_text(entry, options)
 	assert(options.color, "options.color is required");
 	assert(options.position, "options.position is required");
 
-	local x, y = toResolution(options.position.x, options.position.y);
+	local x, y = self:to_resolution(options.position.x, options.position.y);
 
 	SetTextFont(options.font);
 	SetTextScale(1.0, options.scale);
@@ -88,8 +88,8 @@ function graphics:draw_rect(options)
 	assert(options.position, "options.position is required");
 
     local _color = type(options.color) == 'table' and options.color or {r = 255, g = 255, b = 255, a = 255};
-    local x, y = toResolution(options.position.x, options.position.y);
-    local width, height = toResolution(options.width, options.height);
+    local x, y = self:to_resolution(options.position.x, options.position.y);
+    local width, height = self:to_resolution(options.width, options.height);
     DRAW_RECT(x + width * 0.5, y + height * 0.5, width, height, _color.r, _color.g, _color.b, _color.a);
 	return self;
 end
@@ -106,8 +106,8 @@ function graphics:draw_sprite(options)
 	self:request_texture_dict(options.textureDict);
 
 	local _color = type(options.color) == 'table' and options.color or {r = 255, g = 255, b = 255, a = 255};
-	local x, y = toResolution(options.position.x, options.position.y);
-	local width, height = toResolution(options.width, options.height);
+	local x, y = self:to_resolution(options.position.x, options.position.y);
+	local width, height = self:to_resolution(options.width, options.height);
 
 	DRAW_SPRITE(options.textureDict, options.textureName, x + width * 0.5, y + height * 0.5, width, height, 0.0, _color.r, _color.g, _color.b, _color.a);
 	return self;
@@ -184,6 +184,8 @@ function graphics:destroy()
 	self:stop();
 	return self;
 end
+
+print("OKKK")
 
 ---EXAMPLE:
 
