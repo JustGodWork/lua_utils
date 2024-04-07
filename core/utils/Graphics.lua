@@ -6,22 +6,6 @@
 local DRAW_RECT = DrawRect;
 local DRAW_SPRITE = DrawSprite;
 
----@enum eTextAlignement
-eTextAlignement = {
-	Centered = 0,
-	Left = 1,
-	Right = 2
-};
-
----@enum eTextFont
-eTextFont = {
-	ChaletLondon = 0,
-	HouseScript = 1,
-	Monospace = 2,
-	ChaletComprimeCologne = 4,
-	Pricedown = 7,
-};
-
 ---@class GraphicsData
 ---@field public type "rect" | "text" | "sprite
 ---@field public entry? string
@@ -203,7 +187,7 @@ end
 
 ---EXAMPLE:
 
----@type GraphicsContext
+-- ---@type GraphicsContext
 -- local context = class.instance("GraphicsContext")
 -- 	:addText("Il a pas dit bonjour", {
 -- 		font = eTextFont.ChaletLondon,
@@ -235,6 +219,6 @@ end
 
 -- context:start();
 
--- RegisterCommand("toggleg", function()
+-- RegisterCommand("toggle_context", function()
 -- 	context.toggle();
 -- end, false);
