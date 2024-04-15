@@ -3,7 +3,7 @@
 ---@description A simple event emitter class for lua_version >= 5.4
 ---@source https://github.com/JustGodWork/lua_utils/blob/main/core/system/EventEmitter.lua
 
----@class EventEmitter
+---@class EventEmitter: BaseClass
 ---@field private _events table<string, function[]>
 ---@field private _maxListeners number
 local event_emitter = class("EventEmitter");
@@ -12,15 +12,14 @@ local event_emitter = class("EventEmitter");
 ---@param func function
 ---@vararg any
 local function safe_call(eventName, func, ...)
-	local success, result = pcall(func, ...);
-
-	if (not success) then
-		print(("An error occurred while emitting event (%s): %s"):format(eventName, result));
-	end
+	local args = { ... };
+	local success, result = xpcall(func, function(err)
+		print(("An error occurred while emitting event (%s): %s"):format(eventName, err));
+	end, table.unpack(args));
 end
 
 ---@param options EventEmitterOptions
-function event_emitter:constructor(options)
+function event_emitter:Constructor(options)
 	local opt = type(options) == "table" and options or {};
 	self._events = {};
 	self._maxListeners = type(opt.maxListeners) == "number"
@@ -40,13 +39,17 @@ function event_emitter:on(event, listener)
 		"EventEmitter: event (%s) has reached the maximum number of listeners (%s) use setMaxListeners to increase the limit"
 	):format(event, self._maxListeners));
 
-	self._events[event][#self._events[event] + 1] = function(...)
+	local index = #self._events[event] + 1;
+
+	self._events[event][index] = function(...)
 		local args = { ... };
-		safe_call(event, listener, table.unpack(args));
-	end;
+		CreateThread(function ()
+			safe_call(event, listener, table.unpack(args));
+		end);
+	end
 	return {
 		event = event,
-		index = #self._events[event]
+		index = index
 	};
 end
 
@@ -82,4 +85,9 @@ function event_emitter:emit(event, ...)
 			end
 		end
 	end
+end
+
+function event_emitter:clear()
+	self._events = {};
+	return self;
 end

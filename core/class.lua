@@ -108,7 +108,7 @@ end
 
 ---@param self BaseClass
 ---@vararg any
-local function super(self, ...)
+local function super_constructor(self, ...)
 	local metatable = getmetatable(self);
 	local super_list = recursive_super_list(self, {});
 	local super = super_list[metatable.__super_triggered + 1];
@@ -117,33 +117,26 @@ local function super(self, ...)
 
 	metatable.__super_triggered = metatable.__super_triggered + 1;
 
-	if (rawget(super, "constructor")) then
-		super.constructor(self, ...);
+	if (rawget(super, "Constructor")) then
+		super.Constructor(self, ...);
 	end
 end
 
+---@param self BaseClass
+---@param key string
+---@return any
 local function index(self, key)
-	local metatable = getmetatable(self);
-	local value = rawget(self, key);
-
-	if (key == "prototype") then
-		return {
-			name = metatable.__name,
-			type = metatable.__type,
-		};
-	end
-
-	if (key == "super") then
-		return super;
-	end
-
+    if (key == "super") then
+        return super_constructor;
+    end
 	return rawget(self, key);
 end
 
 ---@param cls BaseClass
----@param type "instance" | "singleton"
+---@param instance_type "instance" | "singleton"
 ---@vararg any
-local function new_instance(cls, type, ...)
+---@return BaseClass
+local function new_instance(cls, instance_type, ...)
     local metatable = getmetatable(cls);
     local instance = setmetatable({}, {
 		__super = metatable.__super,
@@ -152,19 +145,19 @@ local function new_instance(cls, type, ...)
         __index = cls,
         __name = metatable.__name,
 		__newindex = metatable.__newindex,
-        __type = type,
+        __type = instance_type,
     });
 
-    if (rawget(cls, "constructor")) then
-        cls.constructor(instance, ...);
+    if (rawget(cls, "Constructor")) then
+        cls.Constructor(instance, ...);
+    end
 
-		local metatable = getmetatable(instance);
-		local super = metatable.__super;
-		local super_metatable = getmetatable(super);
+    local metatable = getmetatable(instance);
+    local super = metatable.__super;
+    local super_metatable = getmetatable(super);
 
-		if (super_metatable.__name ~= "BaseClass") then
-			assert(metatable.__super_triggered == metatable.__super_count, ("%s: constructor: (Super constructor not called)"):format(metatable.__name));
-		end
+    if (super_metatable.__name ~= "BaseClass") then
+        assert(metatable.__super_triggered == metatable.__super_count, ("%s: Constructor: (Super Constructor not called)"):format(metatable.__name));
     end
 
     return instance;
@@ -174,26 +167,23 @@ end
 ---@param key string
 ---@param value any
 local function new_key_listener(self, key, value)
-    if (key == "constructor") then
+    if (key == "Constructor") then
         rawset(self, key, function(self, ...)
-            local success, result = pcall(value, self, ...);
-
-            if (not success) then
-                error(("%s: constructor: %s"):format(self.prototype.name, result), 2);
-            end
+            xpcall(value, function(err)
+                local metatable = getmetatable(self);
+                error(("%s: Constructor: %s"):format(metatable.__name, err), 2);
+            end, self, ...);
         end);
 		return;
     end
 	rawset(self, key, value);
 end
 
----@class ObjectPrototype
 ---@field public name string
 ---@field public type string
 
 ---@class BaseClass
----@field public prototype ObjectPrototype
----@field public constructor fun(self: BaseClass, ...): void
+---@field public Constructor fun(self: BaseClass, ...): void
 ---@field public super fun(self: BaseClass, ...): void
 classes["BaseClass"] = setmetatable({}, {
     __name = "BaseClass";
@@ -205,6 +195,7 @@ classes["BaseClass"] = setmetatable({}, {
 
 ---@param name string
 ---@param from? string
+---@return BaseClass
 local function class_new(name, from)
     assert(type(name) == "string", ("create_class name: (Expected string, got %s)"):format(type(name)));
     assert(not classes[name], ("create_class name: (Class %s already exists)"):format(name));
@@ -246,6 +237,7 @@ end
 
 ---@param class_name string
 ---@vararg any
+---@return BaseClass
 local function singleton(class_name, ...)
     assert(type(class_name) == "string", ("create_singleton class_name: (Expected string, got %s)"):format(type(class_name)));
 
@@ -278,16 +270,26 @@ local function remove_class(name)
 end
 
 ---@class class_constructor
+---@field public get fun(name: string): BaseClass
 ---@field public extends fun(name: string, from: string): BaseClass
 ---@field public instance fun(name: string, ...): BaseClass
 ---@field public singleton fun(class_name: string, ...): BaseClass
 ---@field public remove fun(name: string): void
+---@field public all table<string, fun(...): BaseClass>
 ---@overload fun(name: string): BaseClass
 class = setmetatable({}, {
     __call = function(self, name)
         return class_new(name, "BaseClass");
     end;
     __index = function(self, key)
+        if (key == "get") then
+            return get_class;
+        end
+
+        if (key == "all") then
+            return classes;
+        end
+
         if (key == "extends") then
             return function(name, from)
                 return class_new(name, from);

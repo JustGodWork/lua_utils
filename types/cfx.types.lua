@@ -39,3 +39,9 @@
 ---@field public position vector2
 ---@field public width number
 ---@field public height number
+
+---@class Color
+---@field public r number
+---@field public g number
+---@field public b number
+---@field public a number

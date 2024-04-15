@@ -5,9 +5,3 @@
 
 ---@class ConsoleData
 ---@field show_meta? boolean
-
----@class Color
----@field public r number
----@field public g number
----@field public b number
----@field public a number
