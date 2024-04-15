@@ -8,7 +8,7 @@
 ---@field private data table
 local map = class("Map");
 
-function map:constructor()
+function map:Constructor()
 	self.size = 0;
 	self._data = {};
 end
@@ -30,9 +30,9 @@ end
 function map:set(key, value)
 	if (value ~= nil) then
 		if (not self._data[key]) then
-			self.size += 1;
+			self.size = self.size + 1;
 		else
-			self.size -= 1;
+			self.size = self.size - 1;
 		end
 	end
 	self._data[key] = value;
@@ -43,12 +43,12 @@ end
 function map:remove(key)
 	if (self._data[key]) then
 		self._data[key] = nil;
-		self.size -= 1;
+		self.size =  self.size - 1;
 	end
 end
 
 ---@param callbackFn fun(key: string | number, value: any)
-function map:for_each(callbackFn)
+function map:forEach(callbackFn)
 	assert(callbackFn, "Map:for_each(): callbackFn must be a function.");
 	for k, v in pairs(self._data) do
 		callbackFn(k, v);
