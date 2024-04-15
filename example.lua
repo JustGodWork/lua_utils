@@ -1,7 +1,7 @@
 ---@class SimpleClass: BaseClass
 local simple_class = class("SimpleClass");
 
-function simple_class:constructor(arg1, arg2)
+function simple_class:Constructor(arg1, arg2)
 	self.arg1 = arg1;
 	self.arg2 = arg2;
 end
@@ -35,7 +35,7 @@ console:log({
 ---@field public data Map
 local extend_class = class.extends("ExtendClass", "EventEmitter");
 
-function extend_class:constructor()
+function extend_class:Constructor()
 	self:super();
 	self.data = class.instance("Map");
 end
